@@ -11,7 +11,8 @@
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
-    "@azure/openai": "^1.0.0-beta.5"
+    "@azure/openai": "^1.0.0-beta.5",
+    "postgres": "^3.3.5"
   },
   "devDependencies": {
     "@azure/functions": "^3.0.0",

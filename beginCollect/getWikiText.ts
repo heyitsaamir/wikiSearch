@@ -21,7 +21,7 @@ const processWikiTextForEmbeddings = (text: string) => {
     return sentences.map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
 }
 
-export const getTextForEmbeddings = () => {
+export const getTextForEmbeddings = async (_textUrl: string) => {
     const text = getWikiText();
     const sentences = processWikiTextForEmbeddings(text);
     return sentences;
