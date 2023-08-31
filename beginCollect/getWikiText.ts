@@ -1,3 +1,5 @@
+import { getWiki } from "./azureDevopsGateway";
+
 const getWikiText = () => {
     return `Interstellar is a 2014 epic science fiction film co-written, directed, and produced by Christopher Nolan.
 It stars Matthew McConaughey, Anne Hathaway, Jessica Chastain, Bill Irwin, Ellen Burstyn, Matt Damon, and Michael Caine.
@@ -21,8 +23,8 @@ const processWikiTextForEmbeddings = (text: string) => {
     return sentences.map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
 }
 
-export const getTextForEmbeddings = async (_textUrl: string) => {
-    const text = getWikiText();
-    const sentences = processWikiTextForEmbeddings(text);
+export const getTextForEmbeddings = async (textUrl: string) => {
+    const wiki = await getWiki(textUrl);
+    const sentences = processWikiTextForEmbeddings(wiki.content);
     return sentences;
 }
