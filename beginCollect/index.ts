@@ -3,8 +3,8 @@ import {
   getProcessedRawTextForEmbeddings,
   getTextForEmbeddings,
 } from "./getWikiText";
-import { getEmbeddings } from "./getEmbeddings";
-import { addEmbeddingsToDb, queryEmbedding } from "./db";
+import { getEmbeddings } from "./gateways/azureOpenAiGateway";
+import { addEmbeddingsToDb, queryEmbedding } from "./gateways/dbGateway";
 import assert = require("assert");
 
 const getTextForWikiUrl = async (wikiUrl: string) => {
