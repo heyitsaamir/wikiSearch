@@ -27,15 +27,18 @@ interface Embedding {
 
 const sql = postgres({
   host: "wiki-search.postgres.database.azure.com",
-  user: "aamir",
+  user: process.env.AZURE_PG_USER,
   password: process.env.AZURE_PG_PASSWORD,
   database: "postgres",
-  ssl: {
-    rejectUnauthorized: true,
-    ca: fs.readFileSync(
-      `/Users/aamirjawaid/Downloads/DigiCertGlobalRootCA.crt.pem`.toString()
-    ),
-  },
+  ssl:
+    process.env.SSL_CERT_PATH != null
+      ? {
+          rejectUnauthorized: true,
+          ca: fs.readFileSync(
+            `/Users/aamirjawaid/Downloads/DigiCertGlobalRootCA.crt.pem`.toString()
+          ),
+        }
+      : true,
   port: 5432,
 }); // will use psql environment variables
 
