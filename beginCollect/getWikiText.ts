@@ -1,7 +1,8 @@
 import { getWiki } from "./azureDevopsGateway";
+import removeMarkdown from "markdown-to-text";
 
 const getWikiText = () => {
-    return `Interstellar is a 2014 epic science fiction film co-written, directed, and produced by Christopher Nolan.
+  return `Interstellar is a 2014 epic science fiction film co-written, directed, and produced by Christopher Nolan.
 It stars Matthew McConaughey, Anne Hathaway, Jessica Chastain, Bill Irwin, Ellen Burstyn, Matt Damon, and Michael Caine.
 Set in a dystopian future where humanity is struggling to survive, the film follows a group of astronauts who travel through a wormhole near Saturn in search of a new home for mankind.
 
@@ -16,15 +17,32 @@ In the United States, it was first released on film stock, expanding to venues u
 The film had a worldwide gross over $677 million (and $773 million with subsequent re-releases), making it the tenth-highest grossing film of 2014.
 It received acclaim for its performances, direction, screenplay, musical score, visual effects, ambition, themes, and emotional weight.
 It has also received praise from many astronomers for its scientific accuracy and portrayal of theoretical astrophysics. Since its premiere, Interstellar gained a cult following,[5] and now is regarded by many sci-fi experts as one of the best science-fiction films of all time.`;
-}
+};
 
-const processWikiTextForEmbeddings = (text: string) => {
-    const sentences = text.split('.');
-    return sentences.map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
-}
+const processWikiTextForEmbeddings = (text: string, type: "md" | "raw") => {
+  let proceessedText = text;
+  switch (type) {
+    case "md":
+      proceessedText = removeMarkdown(text);
+      break;
+    case "raw":
+      break;
+    default:
+      break;
+  }
+  const paragraphs = proceessedText.split("\n\n");
+  return paragraphs
+    .map((paragraph) => paragraph.trim().slice(undefined, 256))
+    .filter((sentence) => sentence.length > 0);
+};
 
 export const getTextForEmbeddings = async (textUrl: string) => {
-    const wiki = await getWiki(textUrl);
-    const sentences = processWikiTextForEmbeddings(wiki.content);
-    return sentences;
-}
+  const wiki = await getWiki(textUrl);
+  const sentences = processWikiTextForEmbeddings(wiki.content, "md");
+  return sentences;
+};
+
+export const getProcessedRawTextForEmbeddings = async (rawText: string) => {
+  const sentences = processWikiTextForEmbeddings(rawText, "raw");
+  return sentences;
+};
