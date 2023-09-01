@@ -22,7 +22,7 @@ interface Embedding {
   id: EmbeddingId;
   text_url: string;
   text_details: TextDetails;
-  embeddings: number[];
+  vector: number[];
 }
 
 const sql = postgres({
@@ -57,10 +57,10 @@ export const addEmbeddingsToDb = async (
       id: uuidv4(),
       text_url: textUrl,
       text_details: { ...embedding.textDetails },
-      embeddings: JSON.stringify(embedding.embedding),
+      vector: JSON.stringify(embedding.embedding),
     };
   });
-  const foo = sql(values, "id", "text_url", "text_details", "embeddings");
+  const foo = sql(values, "id", "text_url", "text_details", "vector");
   try {
     await sql`
        DELETE FROM embeddings WHERE text_url = ${textUrl};
@@ -77,4 +77,12 @@ export const addEmbeddingsToDb = async (
     console.log(e);
     throw e;
   }
+};
+
+export const queryEmbedding = async (embedding: number[]) => {
+  const embeddingStr = JSON.stringify(embedding);
+  const results = await sql<Embedding[]>`
+    SELECT * FROM embeddings ORDER BY vector <=> ${embeddingStr} LIMIT 5;
+  `;
+  return results;
 };
