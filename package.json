@@ -12,7 +12,10 @@
   },
   "dependencies": {
     "@azure/openai": "^1.0.0-beta.5",
-    "postgres": "^3.3.5"
+    "axios": "^1.5.0",
+    "markdown-to-text": "^0.1.1",
+    "postgres": "^3.3.5",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@azure/functions": "^3.0.0",
