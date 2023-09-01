@@ -1,5 +1,5 @@
 import { OpenAIClient, AzureKeyCredential } from "@azure/openai";
-import { TextDetails } from "./db";
+import { TextDetails } from "./dbGateway";
 
 const client = new OpenAIClient(
   "https://wiki-search-embeddings.openai.azure.com/",
