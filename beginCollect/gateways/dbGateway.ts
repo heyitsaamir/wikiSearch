@@ -2,6 +2,32 @@ import postgres = require("postgres");
 import fs = require("fs");
 import { v4 as uuidv4 } from "uuid";
 
+/**
+ * create or replace function match_documents (
+  query_embedding vector(1536),
+  match_threshold float,
+  match_count int
+)
+returns table (
+  id uuid,
+  text_url text,
+  text_details jsonb,
+  similarity float
+)
+language sql stable
+as $$
+  select
+    embeddings.id,
+    embeddings.text_url,
+    embeddings.text_details,
+    1 - (embeddings.vector <=> query_embedding) as similarity
+  from embeddings
+  where 1 - (embeddings.vector <=> query_embedding) > match_threshold
+  order by similarity desc
+  limit match_count;
+$$;
+ */
+
 type EmbeddingId = string & { __brand: "embeddingId" };
 
 export type TextDetails =
@@ -34,9 +60,7 @@ const sql = postgres({
     process.env.SSL_CERT_PATH != null
       ? {
           rejectUnauthorized: true,
-          ca: fs.readFileSync(
-            `/Users/aamirjawaid/Downloads/DigiCertGlobalRootCA.crt.pem`.toString()
-          ),
+          ca: fs.readFileSync(process.env.SSL_CERT_PATH.toString()),
         }
       : true,
   port: 5432,
@@ -53,7 +77,11 @@ const sql = postgres({
  */
 export const addEmbeddingsToDb = async (
   textUrl: string,
-  embeddings: { embedding: number[]; textDetails: TextDetails }[]
+  embeddings: {
+    embedding: number[];
+    textDetails: TextDetails;
+    metadata?: { sender?: string; additionalContext?: string };
+  }[]
 ) => {
   const values = embeddings.map((embedding) => {
     return {
@@ -82,10 +110,14 @@ export const addEmbeddingsToDb = async (
   }
 };
 
+type QueryResult = Pick<Embedding, "text_details" | "text_url" | "id"> & {
+  similarity: number;
+};
+
 export const queryEmbedding = async (embedding: number[]) => {
   const embeddingStr = JSON.stringify(embedding);
-  const results = await sql<Embedding[]>`
-    SELECT * FROM embeddings ORDER BY vector <=> ${embeddingStr} LIMIT 5;
+  const results = await sql<QueryResult[]>`
+    select text_url, text_details, similarity from match_documents(${embeddingStr}, 0.8, 10);
   `;
   return results;
 };
