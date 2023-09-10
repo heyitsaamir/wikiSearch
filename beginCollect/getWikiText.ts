@@ -52,15 +52,3 @@ export const getProcessedRawTextForEmbeddings = async (rawText: string) => {
   const sentences = processWikiTextForEmbeddings(rawText, "raw");
   return sentences;
 };
-
-export const withAdditionalMetadata = (
-  text: string,
-  { sender }: { sender?: string }
-) => {
-  const metadataString = [["SENDER", sender]]
-    .filter(([_, value]) => value != undefined)
-    .map(([key, value]) => `${key}:${value}`)
-    .join("\n");
-  if (metadataString.length == 0) return text;
-  return `${metadataString}\n${text}`;
-};

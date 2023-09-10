@@ -3,7 +3,6 @@ import {
   getProcessedRawTextForEmbeddings,
   getTextForEmbeddings,
   processHtmlForEmbeddings,
-  withAdditionalMetadata,
 } from "./getWikiText";
 import { getEmbeddings } from "./gateways/azureOpenAiGateway";
 import { addEmbeddingsToDb, queryEmbedding } from "./gateways/dbGateway";
@@ -104,21 +103,11 @@ const httpTrigger: AzureFunction = async function (
 export default httpTrigger;
 
 async function saveEmbedding(
-  textForEbdeddings: string[],
+  texts: string[],
   url: string,
   metadata?: { sender?: string; additionalContext?: string }
 ) {
-  const texts =
-    metadata != null
-      ? textForEbdeddings.map((text) =>
-          withAdditionalMetadata(text, { sender: metadata.sender })
-        )
-      : textForEbdeddings;
-
-  if (metadata.additionalContext && texts.length > 0) {
-    texts[0] = `${metadata.additionalContext}\n${texts[0]}`;
-  }
-  const embeddings = await getEmbeddings(texts.slice(undefined, 16));
+  const embeddings = await getEmbeddings(texts.slice(undefined, 16), metadata);
   const dbConnected = await addEmbeddingsToDb(
     url,
     embeddings.map((embedding) => ({ ...embedding, metadata }))
