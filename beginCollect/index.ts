@@ -24,7 +24,7 @@ const getParam = (
       messageType: "html" | "mrkdwn";
       additionalContext?: string;
     }
-  | { type: "wiki_url"; wikiUrl: string }
+  | { type: "wiki_url"; wikiUrl: string; wikiDevUrl: string }
   | { type: "query"; text: string }
   | { type: "ping" } => {
   const {
@@ -47,8 +47,23 @@ const getParam = (
         messageType,
         additionalContext,
       };
-    case wikiUrl !== undefined:
-      return { type: "wiki_url", wikiUrl };
+    case wikiUrl !== undefined: {
+      let wikiDevUrl: string;
+      if (wikiUrl.indexOf("dev.azure.com") !== -1) {
+        wikiDevUrl = wikiUrl;
+      } else {
+        const wikiDetails =
+          /domoreexp\.visualstudio\.com\/([^\/]*)\/.*wikis\/([^\/]*)\/([^\/]*)/.exec(
+            wikiUrl
+          );
+        if (!wikiDetails) {
+          throw new Error("Wiki url is not valid");
+        }
+        const [_, wikiSpace, wikiName, pageId] = wikiDetails;
+        wikiDevUrl = `https://dev.azure.com/domoreexp/${wikiSpace}/_apis/wiki/wikis/${wikiName}/pages/${pageId}?api-version=7.1-preview.1`;
+      }
+      return { type: "wiki_url", wikiUrl, wikiDevUrl };
+    }
     case query !== undefined:
       return { type: "query", text: query };
     case req.query.ping !== undefined:
@@ -66,7 +81,7 @@ const httpTrigger: AzureFunction = async function (
   let body: string | {} = "";
   switch (param.type) {
     case "wiki_url": {
-      const texts = await getTextForWikiUrl(param.wikiUrl);
+      const texts = await getTextForWikiUrl(param.wikiDevUrl);
       await saveEmbedding(texts, param.wikiUrl);
       body = "Done";
       break;

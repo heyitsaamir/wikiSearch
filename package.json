@@ -16,6 +16,7 @@
     "html-to-text": "^9.0.5",
     "lodash": "^4.17.21",
     "markdown-to-text": "^0.1.1",
+    "marked": "^9.0.0",
     "postgres": "^3.3.5",
     "sanitize-html": "^2.11.0",
     "uuid": "^9.0.0"
