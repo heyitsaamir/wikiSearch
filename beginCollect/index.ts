@@ -6,7 +6,7 @@ import {
 } from "./getWikiText";
 import { getEmbeddings } from "./gateways/azureOpenAiGateway";
 import { addEmbeddingsToDb, queryEmbedding } from "./gateways/dbGateway";
-import { groupBy, head, sortBy, chain } from "lodash";
+import { chunk, head, chain } from "lodash";
 import assert = require("assert");
 
 const getTextForWikiUrl = async (wikiUrl: string) => {
@@ -122,11 +122,13 @@ async function saveEmbedding(
   url: string,
   metadata?: { sender?: string; additionalContext?: string }
 ) {
-  const embeddings = await getEmbeddings(texts.slice(undefined, 16), metadata);
-  const dbConnected = await addEmbeddingsToDb(
-    url,
-    embeddings.map((embedding) => ({ ...embedding, metadata }))
-  );
+  for (const textChunk of chunk(texts, 16)) {
+    const embeddings = await getEmbeddings(textChunk, metadata);
+    const dbConnected = await addEmbeddingsToDb(
+      url,
+      embeddings.map((embedding) => ({ ...embedding, metadata }))
+    );
+  }
 }
 
 async function queryForEmbedding(query: string) {
