@@ -4,10 +4,10 @@ import {
   getTextForEmbeddings,
   processHtmlForEmbeddings,
 } from "./getWikiText";
-import { getEmbeddings } from "./gateways/azureOpenAiGateway";
-import { addEmbeddingsToDb, queryEmbedding } from "./gateways/dbGateway";
+import { getEmbeddings } from "../gateways/azureOpenAiGateway";
+import { addEmbeddingsToDb, queryEmbedding } from "../gateways/dbGateway";
 import { chunk, head, chain } from "lodash";
-import { queryForEmbedding, saveEmbedding } from "./embeddings";
+import { saveEmbedding } from "../embeddings/saveEmbeddings";
 
 const getTextForWikiUrl = async (wikiUrl: string) => {
   return await getTextForEmbeddings(wikiUrl);
@@ -25,13 +25,11 @@ const getParam = (
       additionalContext?: string;
     }
   | { type: "wiki_url"; wikiUrl: string; wikiDevUrl: string }
-  | { type: "query"; text: string }
   | { type: "ping" } => {
   const {
     rawText,
     rawTextUrl,
     wikiUrl,
-    query,
     sender,
     messageType,
     additionalContext,
@@ -64,8 +62,6 @@ const getParam = (
       }
       return { type: "wiki_url", wikiUrl, wikiDevUrl };
     }
-    case query !== undefined:
-      return { type: "query", text: query };
     case req.query.ping !== undefined:
       return { type: "ping" };
     default:
@@ -97,11 +93,6 @@ const httpTrigger: AzureFunction = async function (
         additionalContext: param.additionalContext,
       });
       body = "Done";
-      break;
-    }
-    case "query": {
-      const queryResult = await queryForEmbedding(param.text);
-      body = queryResult;
       break;
     }
     case "ping":

@@ -1,5 +1,5 @@
 import sanitize = require("sanitize-html");
-import { getWiki } from "./gateways/azureDevopsGateway";
+import { getWiki } from "../gateways/azureDevopsGateway";
 const { marked } = require("marked");
 import { htmlToText } from "html-to-text";
 
